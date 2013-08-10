@@ -1,0 +1,119 @@
+<html>
+<head>
+<script type="text/javascript" src="jquery-1.4.4.min.js"></script>
+<title>
+Problem 11
+</title>
+</head>
+<body>
+
+<div id="result"></div>
+
+<script type="text/javascript">   <!-- Script-Bereich einleiten -->
+$(document).ready(function() {
+
+  var parseNums = function(text) {
+    var lines, cols, i, j, result;
+    
+    result = [];
+    lines = text.split("\n");
+    
+    for(i=0; i<lines.length-1; i++) {
+      cols = lines[i].split(" ");
+      for(j=0; j<cols.length; j++) {
+        cols[j] = parseInt(cols[j], 10);
+      }
+      result.push(cols);
+    }
+    
+    return result;
+  }
+  
+  var findMaxDir = function(nums, dRow, dCol) {
+    var row, col, rows, cols, i;
+    var maxProd, prod;
+    
+    rows = nums.length - dRow*3;
+    cols = nums[0].length - dCol*3;
+    maxProd = 0;
+    
+    for(row=0; row<rows; row++) {
+      for(col=0; col<cols; col++) {
+        prod = 1;
+        for(i=0; i<4; i++) {
+          prod = prod * nums[row+i*dRow][col+i*dCol];
+        }
+        maxProd = Math.max(maxProd, prod);
+      }
+    }
+    
+    return maxProd;
+  }
+  
+  var findMax = function(nums) {
+    var row, col, rows, cols, i;
+    var maxProd, prod;
+    
+    rows = nums.length;
+    cols = nums[0].length;
+    maxProd = 0;
+    
+    for(row=0; row<rows-3; row++) {
+      for(col=0; col<cols; col++) {
+        prod = 1;
+        for(i=0; i<4; i++) {
+          prod = prod * nums[row+i][col];
+        }
+        maxProd = Math.max(maxProd, prod);
+      }
+    }
+    
+    for(row=0; row<rows; row++) {
+      for(col=0; col<cols-3; col++) {
+        prod = 1;
+        for(i=0; i<4; i++) {
+          prod = prod * nums[row][col+i];
+        }
+        maxProd = Math.max(maxProd, prod);
+      }
+    }
+    
+    for(row=0; row<rows-3; row++) {
+      for(col=0; col<cols-3; col++) {
+        prod = 1;
+        for(i=0; i<4; i++) {
+          prod = prod * nums[row+i][col+i];
+        }
+        maxProd = Math.max(maxProd, prod);
+      }
+    }
+    
+    for(row=3; row<rows; row++) {
+      for(col=0; col<cols-3; col++) {
+        prod = 1;
+        for(i=0; i<4; i++) {
+          prod = prod * nums[row-i][col+i];
+        }
+        maxProd = Math.max(maxProd, prod);
+      }
+    }
+    
+    return maxProd;
+  }
+
+  $.ajax({
+    url: "p11.txt",
+    dataType: "text",
+    success: function(data) {
+      var nums, i, j;
+      
+      nums = parseNums(data);
+      
+      $("#result").append(findMax(nums) + "<br/>");
+    }
+  });
+});
+</script>                        <!-- Script-Bereich beenden -->
+
+</body>
+</html>

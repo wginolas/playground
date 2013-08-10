@@ -1,0 +1,62 @@
+<html>
+<head>
+<script type="text/javascript" src="jquery-1.4.4.min.js"></script>
+<title>
+Problem 18
+</title>
+</head>
+<body>
+
+<div id="result"></div>
+
+<script type="text/javascript">   <!-- Script-Bereich einleiten -->
+$(document).ready(function() {
+
+  var parseNums = function(text) {
+    var lines, cols, i, j, result;
+    
+    result = [];
+    lines = text.split("\n");
+    
+    for(i=0; i<lines.length-1; i++) {
+      cols = lines[i].split(" ");
+      for(j=0; j<cols.length; j++) {
+        cols[j] = parseInt(cols[j], 10);
+      }
+      result.push(cols);
+    }
+    
+    return result;
+  }
+  
+  var pyramidPath = function(nums) {
+    var col, row, rows;
+    
+    rows = nums.length;
+    
+    for(row=rows-2; row>=0; row--) {
+      for(col=0; col<nums[row].length; col++) {
+        nums[row][col] = nums[row][col]
+                       + Math.max(nums[row+1][col], nums[row+1][col+1]);
+      }
+    }
+    
+    return nums[0][0];
+  }
+
+  $.ajax({
+    url: "p67.txt",
+    dataType: "text",
+    success: function(data) {
+      var nums;
+      
+      nums = parseNums(data);
+      
+      $("#result").append(pyramidPath(nums) + "<br/>");
+    }
+  });
+});
+</script>                        <!-- Script-Bereich beenden -->
+
+</body>
+</html>
