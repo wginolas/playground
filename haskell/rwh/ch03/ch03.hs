@@ -11,7 +11,7 @@ fromList []     = Nil
 toList (Cons x xs) = x : toList xs
 toList Nil= []
 
-data Tree a = Tree a (Maybe (Tree a)) (Maybe (Tree a))
+data MyTree a = MyTree a (Maybe (MyTree a)) (Maybe (MyTree a))
               deriving (Show)
 
 -- EXERCISES
@@ -64,12 +64,22 @@ intersperse' _ [] = []
 intersperse' a [x] = [x]
 intersperse' a (x:xs) = x : [a] : intersperse' a xs
 
-
 intersperse :: a -> [[a]] -> [a]
 intersperse a xs = concat $ intersperse' a xs
 
 -- Using the binary tree type that we defined earlier in this chapter, write a function that will determine the height of the tree. The height is the largest number of hops from the root to an Empty. For example, the tree Empty has height zero; Node "x" Empty Empty has height one; Node "x" Empty (Node "y" Empty Empty) has height two; and so on.
+
+data Tree a = Node a (Tree a) (Tree a)
+            | Empty
+            deriving (Show)
+
+height Empty = 0
+height (Node _ l r) = 1 + min (height l) (height r)
+
 -- Consider three two-dimensional points, a, b, and c. If we look at the angle formed by the line segment from a to b and the line segment from b to c, it turns left, turns right, or forms a straight line. Define a Direction data type that lets you represent these possibilities.
+
+
+
 -- Write a function that calculates the turn made by three two-dimensional points and returns a Direction.
 -- Define a function that takes a list of two-dimensional points and computes the direction of each successive triple. Given a list of points [a,b,c,d,e], it should begin by computing the turn made by [a,b,c], then the turn made by [b,c,d], then [c,d,e]. Your function should return a list of Direction.
 -- Using the code from the preceding three exercises, implement Graham’s scan algorithm for the convex hull of a set of 2D points. You can find good description of what a convex hull is, and how the Graham scan algorithm should work, on Wikipedia.
