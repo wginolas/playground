@@ -78,8 +78,52 @@ height (Node _ l r) = 1 + min (height l) (height r)
 
 -- Consider three two-dimensional points, a, b, and c. If we look at the angle formed by the line segment from a to b and the line segment from b to c, it turns left, turns right, or forms a straight line. Define a Direction data type that lets you represent these possibilities.
 
+pairs [] = []
+pairs [x] = []
+pairs (x:xs) = pairs' (x:xs) x
+  where
+    pairs' [x] last = [(x, last)]
+    pairs' (x1:x2:xs) last = (x1, x2) : pairs' (x2:xs) last
 
+data Point = Point {
+  pointX :: Double,
+  pointY :: Double
+  } deriving (Show, Eq)
+
+data Orientation = LeftOf | RightOf | Parallel deriving(Show, Eq)
+
+oriFromZ z | z > 0  = LeftOf
+oriFromZ z | z < 0  = RightOf
+oriFromZ z | otherwise = Parallel
+
+crossZ (Point ax ay) (Point bx by) = ax*by - ay*bx
+
+instance Num Point where
+  (+) (Point ax ay) (Point bx by) = Point (ax+bx) (ay+by)
+  (-) (Point ax ay) (Point bx by) = Point (ax-bx) (ay-by)
+  (*) _ _ = error "Not Implemented"
+  negate _ = error "Not Implemented"
+  abs _ = error "Not Implemented"
+  signum _ = error "Not Implemented"
+  fromInteger _ = error "Not Implemented"
+  fromInt _ = error "Not Implemented"
+
+orientation a b c = oriFromZ $ crossZ (b-a) (c-a)
+
+origin = Point 0 0
+testPoints = [Point 1 0, Point 0 1, Point (-1) 0, Point 0 (-1)]
+
+orientation' a (b, c) = orientation a b c
+crossZ' (a, b) = crossZ a b
+
+-- map (orientation' origin) $ pairs $ reverse testPoints
+-- map (orientation' origin) $ pairs testPoints
 
 -- Write a function that calculates the turn made by three two-dimensional points and returns a Direction.
+
+turn a b c = oriFromZ $ crossZ (b-a) (c-b)
+
+turn' a (b, c) = turn a b c
+
 -- Define a function that takes a list of two-dimensional points and computes the direction of each successive triple. Given a list of points [a,b,c,d,e], it should begin by computing the turn made by [a,b,c], then the turn made by [b,c,d], then [c,d,e]. Your function should return a list of Direction.
 -- Using the code from the preceding three exercises, implement Graham’s scan algorithm for the convex hull of a set of 2D points. You can find good description of what a convex hull is, and how the Graham scan algorithm should work, on Wikipedia.
