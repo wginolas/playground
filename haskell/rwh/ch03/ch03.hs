@@ -1,4 +1,4 @@
-import Data.List (sortBy)
+import Data.List (sortBy, minimumBy, delete)
 import Data.Ord (comparing)
 
 data List a = Cons a (List a)
@@ -78,12 +78,12 @@ height (Node _ l r) = 1 + min (height l) (height r)
 
 -- Consider three two-dimensional points, a, b, and c. If we look at the angle formed by the line segment from a to b and the line segment from b to c, it turns left, turns right, or forms a straight line. Define a Direction data type that lets you represent these possibilities.
 
-pairs [] = []
-pairs [x] = []
-pairs (x:xs) = pairs' (x:xs) x
+pairsLoop [] = []
+pairsLoop [x] = []
+pairsLoop (x:xs) = pairsLoop' (x:xs) x
   where
-    pairs' [x] last = [(x, last)]
-    pairs' (x1:x2:xs) last = (x1, x2) : pairs' (x2:xs) last
+    pairsLoop' [x] last = [(x, last)]
+    pairsLoop' (x1:x2:xs) last = (x1, x2) : pairsLoop' (x2:xs) last
 
 data Point = Point {
   pointX :: Double,
@@ -111,13 +111,17 @@ instance Num Point where
 orientation a b c = oriFromZ $ crossZ (b-a) (c-a)
 
 origin = Point 0 0
-testPoints = [Point 1 0, Point 0 1, Point (-1) 0, Point 0 (-1)]
+p1 = Point 1 0
+p2 = Point 0 1
+p3 = Point (-1) 0
+p4 = Point 0 (-1)
+testPoints = [p1, p2, p3, p4]
 
 orientation' a (b, c) = orientation a b c
 crossZ' (a, b) = crossZ a b
 
--- map (orientation' origin) $ pairs $ reverse testPoints
--- map (orientation' origin) $ pairs testPoints
+-- map (orientation' origin) $ pairsLoop $ reverse testPoints
+-- map (orientation' origin) $ pairsLoop testPoints
 
 -- Write a function that calculates the turn made by three two-dimensional points and returns a Direction.
 
@@ -126,4 +130,44 @@ turn a b c = oriFromZ $ crossZ (b-a) (c-b)
 turn' a (b, c) = turn a b c
 
 -- Define a function that takes a list of two-dimensional points and computes the direction of each successive triple. Given a list of points [a,b,c,d,e], it should begin by computing the turn made by [a,b,c], then the turn made by [b,c,d], then [c,d,e]. Your function should return a list of Direction.
+
+triples []  = []
+triples [a] = []
+triples [a,b] = []
+triples (x1:x2:x3:xs) = (x1, x2, x3) : triples (x2:x3:xs)
+
+dirs ps = map t $ triples ps
+  where
+    t (a, b, c) = turn a b c
+
 -- Using the code from the preceding three exercises, implement Graham’s scan algorithm for the convex hull of a set of 2D points. You can find good description of what a convex hull is, and how the Graham scan algorithm should work, on Wikipedia.
+
+lexiOrd (Point ax ay) (Point bx by) =
+  if ox == EQ
+    then oy
+    else ox
+  where
+    ox = compare ax bx
+    oy = compare ay by
+
+leftBottom = minimumBy lexiOrd
+
+leftOfOrd center a b = o $ orientation center a b
+  where
+    o LeftOf = LT
+    o Parallel = EQ
+    o RightOf = GT
+
+addToStack [] p = [p]
+addToStack [p1] p = [p, p1]
+addToStack (p1:p2:ps) p =
+  if (turn p p1 p2) == RightOf
+    then p:p1:p2:ps
+    else addToStack (p2:ps) p
+
+hull ps =
+  let p0 = leftBottom ps
+      otherPs = delete p0 ps
+      sorted = sortBy (leftOfOrd p0) otherPs
+  in foldl addToStack [p0] sorted
+
