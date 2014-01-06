@@ -1,0 +1,14 @@
+<!doctype html>
+<html ng-app="plan">
+    <head>
+        <script src="angular.js"></script>
+        <script src="plan.js"></script>
+        <link rel="stylesheet" href="plan.css">
+    </head>
+    <body>
+        <div ng-controller="PlanCtrl as plan">
+            <input type="text" placeholder="Redmine API-Key" ng-model="apiKey"/>
+            <button ng-click="plan.refresh()">Refresh</button>
+        </div>
+    </body>
+</html>
