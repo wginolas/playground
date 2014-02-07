@@ -75,7 +75,7 @@ def sum_journal(diffs):
     
 def filter_by_time(data):
     end = data[-1][0]
-    start = end - datetime.timedelta(days=60)
+    start = end - datetime.timedelta(hours=15)
     print "start: %s, end: %s" % (start, end)
     print "start: %s, end: %s" % (type(start), type(end))
     return filter(lambda x: x[0] >= start and x[0] <= end, data)
@@ -94,14 +94,12 @@ def plot_tickets(tracker_id, fname):
     data = sorted(data, key=lambda x: x[0])
     data = list(sum_journal(data))
 
-    subplot(2, 1, 1)
-    x1, y1 = zip(*data)
-    step(x1, y1, where="post")
+    #subplot(2, 1, 1)
+    #x1, y1 = zip(*data)
+    #step(x1, y1, where="post")
 
-    subplot(2, 1, 2)
-    print data
+    #subplot(2, 1, 2)
     current_data = filter_by_time(data)
-    print current_data
     x2, y2 = zip(*current_data)
     step(x2, y2, where="post")
 
@@ -110,7 +108,7 @@ def plot_tickets(tracker_id, fname):
 
 def main():
     matplotlib.rc("font", size=8)
-    plot_tickets(SUPPORT, "support.png")
+    #plot_tickets(SUPPORT, "support.png")
     plot_tickets(BUG, "bug.png")
 
 main()
