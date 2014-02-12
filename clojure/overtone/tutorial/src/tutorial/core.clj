@@ -1,17 +1,17 @@
 (ns tutorial.core)
 
 (use 'overtone.core)
-(use 'overtone.inst.sampled-piano)
-(use 'overtone.inst.piano)
-(connect-external-server 15247)
 (boot-external-server)
+(use 'overtone.inst.sampled-piano)
+;(use 'overtone.inst.piano)
+;(connect-external-server 15247)
 (definst foo [] (saw 220))
 (foo)
 (kill foo)
 
 (demo (sin-osc))
 
-(sampled-piano)
+(sampled-piano 60)
 (piano)
 
 (defn play-note
@@ -24,15 +24,15 @@
          (at (+ t-start (* delay t)) (play-note n)))
   )
 
-(defn play-notes
-  [t delay notes]
-  (let [nextT (+ t delay)
-        n (first notes)
-        nRest (rest notes)]
-    
-    (when n
-     (at t (play-note n))
-     (apply-by nextT play-notes [nextT delay nRest]))))
+;(defn play-notes
+;  [t delay notes]
+;  (let [nextT (+ t delay)
+;        n (first notes)
+;        nRest (rest notes)]
+;    
+;    (when n
+;     (at t (play-note n))
+;     (apply-by nextT play-notes [nextT delay nRest]))))
 
 (defn my-chord
   [n]
@@ -43,10 +43,10 @@
      (nth s (+ 4 n))]))
 
 (do
-  (play-notes (+ (now)    0) 50 (my-chord 1))
-  (play-notes (+ (now) 1000) 50 (my-chord 4))
-  (play-notes (+ (now) 2000) 50 (my-chord 1))
-  (play-notes (+ (now) 3000) 50 (my-chord 5)))
+  (play-notes (+ (now)    0) 100 (my-chord 1))
+  (play-notes (+ (now) 1000) 100 (my-chord 4))
+  (play-notes (+ (now) 2000) 100 (my-chord 1))
+  (play-notes (+ (now) 3000) 100 (sort (my-chord 5))))
 
 (play-notes (now) 0 (my-chord 1))
 (play-notes (now) 0 (chord :c4 :major))
@@ -60,6 +60,47 @@
   (play-note 60)
   (play-note 64)
   (play-note 67))
+
+(defn play [speed notes]
+  (let [t-start (now)]
+    (doseq [[t n] notes]
+      (at (+ t-start (* t speed)) (play-note n)))))
+
+(defn digit-to-int [c]
+  (- (int c) (int \0)))
+
+(defn parse-numbers-impl [t s]
+  (when-let [s (seq s)]
+    (let [c (first s)
+          r (rest s)]
+      (if (= \- c)
+        (recur (inc t) r)
+        (lazy-seq
+         (cons
+          [t (digit-to-int c)]
+          (parse-numbers-impl t r)))))))
+
+(defn parse-numbers [s]
+  (parse-numbers-impl 0 s))
+
+(defn num->notes [num notes]
+  (map (fn [x]
+         (let [[t n] x]
+           [t (nth notes n)]))
+       num))
+
+(cond)
+(play 200 
+      (num->notes
+       (parse-numbers "1-2-3")
+       (scale :c4 :major)))
+
+(when-let [x (seq (rest "34"))]
+  (println x))
+(tail "")
+(play 1000 [[0 60] [1 61] [0 62]])
+
+(when-let)
 
 (definst steel-drum [note 60 amp 0.8]
   (let [freq (midicps note)]
