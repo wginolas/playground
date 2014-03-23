@@ -1,13 +1,22 @@
 (ns tutorial.core)
 
+;(use 'overtone.live)
 (use 'overtone.core)
 (boot-external-server)
 (use 'overtone.inst.sampled-piano)
-;(use 'overtone.inst.piano)
-;(connect-external-server 15247)
-(definst foo [] (saw 220))
-(foo)
-(kill foo)
+(use 'overtone.inst.synth)
+(use 'overtone.midi)
+(use 'overtone.studio.midi)
+;(midi-sources)
+;(connected-midi-devices)
+(midi-connected-receivers)
+(event-debug-on)
+(event-debug-off)
+(def player (midi-poly-player sampled-piano))
+(midi-poly-player sampled-piano)
+;(definst foo [] (saw 220))
+;(foo)
+;(kill foo)
 
 (demo (sin-osc))
 
@@ -41,6 +50,14 @@
     [(nth s n)
      (nth s (+ 2 n))
      (nth s (+ 4 n))]))
+
+(defn every-second [s]
+  (if (empty? s)
+    '()
+    (lazy-seq (cons (first s) (every-secons (rest (rest s)))))))
+
+(play-notes (now) 100 (sort (take 4 (every-second (drop 0 (cycle (scale :c3 :major)))))))
+
 
 (do
   (play-notes (+ (now)    0) 100 (my-chord 1))
@@ -89,11 +106,24 @@
            [t (nth notes n)]))
        num))
 
-(cond)
+(concat)
+
 (play 200 
       (num->notes
        (parse-numbers "1-2-3")
        (scale :c4 :major)))
+
+(play 200 
+      (num->notes
+       (parse-numbers "135")
+       (scale :c4 :major)))
+
+(play 200
+      (num->notes
+       (parse-numbers "1-2-3-2")
+       (sort (every-second (drop 0 (cycle (scale :c3 :major)))))))
+
+(play-notes (now) 100 (sort (every-second (drop 0 (cycle (scale :c3 :major))))))
 
 (when-let [x (seq (rest "34"))]
   (println x))
@@ -117,7 +147,7 @@
     (* amp env filt)))
 
 (c-hat)
-(steel-drum)
+(sort (every-second (drop 0 (cycle (scale :c3 :major)))))(steel-drum)
 
 (def piece [:E4 :F#4 :B4 :C#5 :D5 :F#4 :E4 :C#5 :B4 :F#4 :D5 :C#5])
 
