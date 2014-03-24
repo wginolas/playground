@@ -1,35 +1,25 @@
 (ns cljs-playground.server
-  (:require [ring.adapter.jetty :as jetty]
-            [ring.middleware.resource :as resources]
-            [ring.util.response :as response])
+  (:require [cemerick.austin.repls :refer (browser-connected-repl-js)]
+            [net.cgrand.enlive-html :as enlive]
+            [compojure.route :refer (resources)]
+            [compojure.core :refer (GET defroutes)]
+            ring.adapter.jetty
+            [clojure.java.io :as io])
   (:gen-class))
 
-(defn render-app []
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body
-   (str "<!DOCTYPE html>"
-        "<html>"
-        "<head>"
-        "<link rel=\"stylesheet\" href=\"css/page.css\" />"
-        "</head>"
-        "<body>"
-        "<div>"
-        "<p id=\"clickable\">Click me!</p>"
-        "</div>"
-        "<script src=\"js/cljs.js\"></script>"
-        "</body>"
-        "</html>")})
+(enlive/deftemplate page
+  (io/resource "index.html")
+  []
+  [:body] (enlive/append
+           (enlive/html [:script (browser-connected-repl-js)])))
 
-(defn handler [request]
-  (if (= "/" (:uri request))
-      (response/redirect "/help.html")
-      (render-app)))
+(defroutes site
+  (resources "/")
+  (GET "/*" req (page)))
 
-(def app 
-  (-> handler
-    (resources/wrap-resource "public")))
-
-(defn -main [& args]
-  (jetty/run-jetty app {:port 3000}))
+(defn run
+  []
+  (defonce ^:private server
+    (ring.adapter.jetty/run-jetty #'site {:port 8080 :join? false}))
+  server)
 
