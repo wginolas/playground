@@ -18,6 +18,8 @@
 ;(foo)
 ;(kill foo)
 
+(count (freesound-searchm [:id] "LOW" :f "pack:MISStereoPiano"))
+
 (demo (sin-osc))
 
 (sampled-piano 60)
