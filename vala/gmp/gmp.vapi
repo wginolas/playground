@@ -11,9 +11,18 @@ namespace Gmp {
 		public void set_ui(ulong op);
 		public void set_si(long op);
 
+		public void add(Mpz op1, Mpz op2);
+		public void add_ui(Mpz op1, ulong op2);
+
+		public void sub(Mpz op1, Mpz op2);
+
 		public void mul(Mpz op1, Mpz op2);
 		public void mul_ui(Mpz op1, ulong op2);
 		public void mul_si(Mpz op1, long op2);
+
+		public void pow_ui(Mpz base, ulong exp);
+
+		public int cmp(Mpz op);
 
 		public int sizeinbase(int base);
 
