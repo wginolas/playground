@@ -27,7 +27,7 @@
      (println i)
      (lazy-seq (cons i (countImpl (inc i))))) 0))
 
-(reduce * (take 9 primes))
+(reduce * (take 100 primes))
 (take 25 primes)
 (doc lazy-seq)
 (* (.pow (biginteger 2) 166) 9)
