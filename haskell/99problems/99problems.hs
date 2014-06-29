@@ -1,3 +1,6 @@
+import Random
+import Data.List
+import qualified Data.IntMap as M
 
 -- http://www.ic.unicamp.br/~meidanis/courses/mc336/2006s2/funcional/L-99_Ninety-Nine_Lisp_Problems.html
 
@@ -32,12 +35,18 @@ myLen (x:xs) = 1 + myLen xs
 
 -- P05 (*) Reverse a list.
 
-myReverse [] = []
-myReverse (x:xs) =
---
+myReverse xs = impl xs []
+  where
+    impl [] result = result
+    impl (x:xs) result = impl xs (x:result)
+
+
 -- P06 (*) Find out whether a list is a palindrome.  A palindrome can be
 --     read forward or backward; e.g. (x a m a x).
---
+
+isPalindrome xs = xs == reverse xs
+
+
 -- P07 (**) Flatten a nested list structure.  Transform a list, possibly
 --     holding lists as elements into a `flat' list by replacing each
 --     list with its elements (recursively).
@@ -45,21 +54,47 @@ myReverse (x:xs) =
 --     Example: * (my-flatten '(a (b (c d) e))) (A B C D E)
 --
 --     Hint: Use the predefined functions list and append.
---
+
+data NestedList a = Elem a | List [NestedList a]
+
+myFlatten (Elem a) = [a]
+myFlatten (List []) = []
+myFlatten (List (x:xs)) = (myFlatten x) ++ (myFlatten $ List xs)
+
+
 -- P08 (**) Eliminate consecutive duplicates of list elements.  If a list
 --     contains repeated elements they should be replaced with a single
 --     copy of the element. The order of the elements should not be
 --     changed.
 --
 --     Example: * (compress '(a a a a b c c a a d e e e e)) (A B C A D E)
---
+
+compress [] = []
+compress (x:xs) = impl x xs
+  where
+    impl last [] = [last]
+    impl last (x:xs)
+      | last == x = impl last xs
+      | otherwise = last : impl x xs
+
+
 -- P09 (**) Pack consecutive duplicates of list elements into sublists.
 --     If a list contains repeated elements they should be placed in
 --     separate sublists.
 --
 --     Example: * (pack '(a a a a b c c a a d e e e e)) ((A A A A) (B) (C
 --     C) (A A) (D) (E E E E))
---
+
+pack [] = []
+pack (x:xs) = impl [x] xs
+  where
+    impl last [] = [last]
+    impl last@(l:ls) (x:xs) =
+      if l == x
+      then impl (x:last) xs
+      else last : impl [x] xs
+
+
 -- P10 (*) Run-length encoding of a list.  Use the result of problem P09
 --     to implement the so-called run-length encoding data compression
 --     method. Consecutive duplicates of elements are encoded as lists (N
@@ -67,7 +102,18 @@ myReverse (x:xs) =
 --
 --     Example: * (encode '(a a a a b c c a a d e e e e)) ((4 A) (1 B) (2
 --     C) (2 A) (1 D)(4 E))
---
+
+encode :: Eq a => [a] -> [(Int, a)]
+encode [] = []
+encode (x:xs) = impl 1 x xs
+  where
+    impl :: Eq a => Int -> a -> [a] -> [(Int, a)]
+    impl count last [] = [(count, last)]
+    impl count last (x:xs)
+      | last == x = impl (count + 1) last xs
+      | otherwise = (count, last) : impl 1 x xs
+
+
 -- P11 (*) Modified run-length encoding.  Modify the result of problem
 --     P10 in such a way that if an element has no duplicates it is
 --     simply copied into the result list. Only elements with duplicates
@@ -75,11 +121,15 @@ myReverse (x:xs) =
 --
 --     Example: * (encode-modified '(a a a a b c c a a d e e e e)) ((4 A)
 --     B (2 C) (2 A) D (4 E))
---
+
+-- TODO: Wie in Haskell?
+
 -- P12 (**) Decode a run-length encoded list.  Given a run-length code
 --     list generated as specified in problem P11. Construct its
 --     uncompressed version.
---
+
+decode = concat . map (\(n,x) -> replicate n x)
+
 -- P13 (**) Run-length encoding of a list (direct solution).  Implement
 --     the so-called run-length encoding data compression method
 --     directly. I.e. don't explicitly create the sublists containing the
@@ -89,29 +139,47 @@ myReverse (x:xs) =
 --
 --     Example: * (encode-direct '(a a a a b c c a a d e e e e)) ((4 A) B
 --     (2 C) (2 A) D (4 E))
---
+
+-- TODO
+
 -- P14 (*) Duplicate the elements of a list.  Example: * (dupli '(a b c c
 --     d)) (A A B B C C C C D D)
---
+
+dupli [] = []
+dupli (x:xs) = x : x : dupli xs
+
 -- P15 (**) Replicate the elements of a list a given number of times.
 --     Example: * (repli '(a b c) 3) (A A A B B B C C C)
---
+
+repli xs n = concat $ map (\x -> replicate n x) xs
+
 -- P16 (**) Drop every N'th element from a list.  Example: * (drop '(a b
 --     c d e f g h i k) 3) (A B D E G H K)
---
+
+myDrop xs n = impl xs n n
+  where
+    impl [] _ _ = []
+    impl (x:xs) n i
+      | i == 1 = impl xs n n
+      | otherwise = x : impl xs n (i-1)
+
 -- P17 (*) Split a list into two parts; the length of the first part is
 --     given.  Do not use any predefined predicates.
 --
 --     Example: * (split '(a b c d e f g h i k) 3) ( (A B C) (D E F G H I
 --     K))
---
+
+mySplit xs n = (take n xs, drop n xs)
+
 -- P18 (**) Extract a slice from a list.  Given two indices, I and K, the
 --     slice is the list containing the elements between the I'th and
 --     K'th element of the original list (both limits included). Start
 --     counting the elements with 1.
 --
 --     Example: * (slice '(a b c d e f g h i k) 3 7) (C D E F G)
---
+
+mySlice xs min max = take (max-min+1) $ drop (min-1) xs
+
 -- P19 (**) Rotate a list N places to the left.  Examples: * (rotate '(a
 --     b c d e f g h) 3) (D E F G H A B C)
 --
@@ -119,35 +187,86 @@ myReverse (x:xs) =
 --
 --     Hint: Use the predefined functions length and append, as well as
 --     the result of problem P17.
---
+
+myRotate xs n = left ++ right
+  where
+    (right, left)
+      | n >= 0 = mySplit xs n
+      | otherwise = mySplit xs (length xs + n)
+
 -- P20 (*) Remove the K'th element from a list.  Example: * (remove-at
 --     '(a b c d) 2) (A C D)
---
+
+myRemoveAt [] _ = []
+myRemoveAt (x:xs) 1 = xs
+myRemoveAt (x:xs) n = x : myRemoveAt xs (n-1)
+
 -- P21 (*) Insert an element at a given position into a list.  Example: *
 --     (insert-at 'alfa '(a b c d) 2) (A ALFA B C D)
---
+
+myInsertAt e [] _ = [e]
+myInsertAt e (x:xs) 1 = e : x : xs
+myInsertAt e (x:xs) n = x : myInsertAt e xs (n-1)
+
 -- P22 (*) Create a list containing all integers within a given range.
 --     If first argument is smaller than second, produce a list in
 --     decreasing order.  Example: * (range 4 9) (4 5 6 7 8 9)
---
+
+myRange start end
+  | start == end = [start]
+  | start < end = start : myRange (start+1) end
+  | otherwise = start : myRange (start-1) end
+
 -- P23 (**) Extract a given number of randomly selected elements from a
 --     list.  The selected items shall be returned in a list.  Example: *
 --     (rnd-select '(a b c d e f g h) 3) (E D A)
 --
 --     Hint: Use the built-in random number generator and the result of
 --     problem P20.
---
+
+rndSelect1 :: RandomGen b => [a] -> b -> (a,[a],b)
+rndSelect1 xs rng = ((xs !! i), (myRemoveAt xs (i+1)), nextRng)
+  where
+    (i, nextRng) = randomR (0, length xs - 1) rng
+
+--rndSelect1Test :: [a] -> IO (a,[a])
+rndSelect1Test xs = do
+  rng <- getStdGen
+  let (y,ys,rng1) = rndSelect1 xs rng
+  setStdGen rng1
+  print (y,ys)
+  return (y,ys)
+
+rndSelect :: RandomGen b => [a] -> Int -> b -> ([a],b)
+rndSelect _ 0 rng = ([], rng)
+rndSelect xs i rng = (y : rest, rng2)
+  where
+    (y, ys, rng1) = rndSelect1 xs rng
+    (rest, rng2) = rndSelect ys (i-1) rng1
+
+rndSelectTest :: Show a => [a] -> Int -> IO [a]
+rndSelectTest xs c = do
+  rng <- getStdGen
+  let (ys, rng1) = rndSelect xs c rng
+  setStdGen rng1
+  print ys
+  return ys
+
 -- P24 (*) Lotto: Draw N different random numbers from the set 1..M.  The
 --     selected numbers shall be returned in a list.  Example: *
 --     (lotto-select 6 49) (23 1 17 33 21 37)
 --
 --     Hint: Combine the solutions of problems P22 and P23.
---
+
+-- TODO langweilig
+
 -- P25 (*) Generate a random permutation of the elements of a list.
 --     Example: * (rnd-permu '(a b c d e f)) (B A D C E F)
 --
 --     Hint: Use the solution of problem P23.
---
+
+-- TODO langweilig
+
 -- P26 (**) Generate the combinations of K distinct objects chosen from
 --     the N elements of a list In how many ways can a committee of 3 be
 --     chosen from a group of 12 people? We all know that there are
@@ -158,7 +277,14 @@ myReverse (x:xs) =
 --
 --     Example: * (combination 3 '(a b c d e f)) ((A B C) (A B D) (A B E)
 --     ... )
---
+
+myCombination :: Int -> [a] -> [[a]]
+myCombination 0 _ = [[]]
+myCombination c xs = concat $ map step $ tails xs
+  where
+    step [] = []
+    step (x:xs) = map (x:) $ myCombination (c-1) xs
+
 -- P27 (**) Group the elements of a set into disjoint subsets.  a) In how
 --     many ways can a group of 9 people work in 3 disjoint subgroups of
 --     2, 3 and 4 persons? Write a function that generates all the
@@ -183,7 +309,13 @@ myReverse (x:xs) =
 --
 --     You may find more about this combinatorial problem in a good book
 --     on discrete mathematics under the term "multinomial coefficients".
---
+
+myGroup :: Eq a => [a] -> [Int] -> [[[a]]]
+myGroup _ [] = [[]]
+myGroup xs (c:cs) = concatMap impl $ myCombination c xs
+   where
+     impl g = map (g:) $ myGroup (xs \\ g) cs
+
 -- P28 (**) Sorting a list of lists according to length of sublists a) We
 --     suppose that a list contains elements that are lists
 --     themselves. The objective is to sort the elements of this list
@@ -192,7 +324,12 @@ myReverse (x:xs) =
 --
 --     Example: * (lsort '((a b c) (d e) (f g h) (d e) (i j k l) (m n)
 --     (o))) ((O) (D E) (D E) (M N) (A B C) (F G H) (I J K L))
---
+
+myLsort :: [[a]] -> [[a]]
+myLsort = sortBy lOrd
+  where
+    lOrd a b = compare (length a) (length b)
+
 --     b) Again, we suppose that a list contains elements that are lists
 --     themselves. But this time the objective is to sort the elements of
 --     this list according to their length frequency; i.e., in the
@@ -208,7 +345,17 @@ myReverse (x:xs) =
 --     forth list have length 3 which appears twice (there are two list
 --     of this length). And finally, the last three lists have length
 --     2. This is the most frequent length.
---
+
+lfsort :: [[a]] -> [[a]]
+lfsort xs = sortBy ord xs
+  where
+    ord a b = compare (lenMap M.! (length a)) (lenMap M.! (length b))
+    lenMap :: M.IntMap Int
+    lenMap = foldl incMap M.empty $ map length xs
+    incMap m i = M.alter incKey i m
+    incKey Nothing = Just 1
+    incKey (Just c) = Just (c+1)
+
 -- Arithmetic
 --
 -- P31 (**) Determine whether a given integer number is prime.  Example:
@@ -314,7 +461,17 @@ myReverse (x:xs) =
 --
 --     Example: * table(A,B,and(A,or(A,B))).  true true true true fail
 --     true fail true fail fail fail fail
---
+
+type Symbol = String
+
+class BoolContext a where
+  isTrue :: a -> Symbol -> Bool
+
+instance Eq a => BoolContext [a] where
+  isTrue ss s = elem s ss
+
+myNot s c = not $ isTrue s c
+
 -- P47 (*) Truth tables for logical expressions (2).  Continue problem
 --     P46 by defining and/2, or/2, etc as being operators. This allows
 --     to write the logical expression in the more natural way, as in the
