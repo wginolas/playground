@@ -1,5 +1,10 @@
-hello.c: hello.vala
-	valac -C hello.vala
+default: hello
 
-hello: hello.c
-	gcc -I /usr/include/glib-2.0/ -I /usr/lib/x86_64-linux-gnu/glib-2.0/include/ -lglib hello.c -o hello
+hello: hello.vala
+	valac hello.vala
+
+run: hello
+	./hello
+
+check-syntax:
+	valac -C ${CHK_SOURCES}

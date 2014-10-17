@@ -2,14 +2,6 @@
 
 using Gmp;
 
-string mpz_to_str(Gmp.Mpz mpz) {
-	char* chars = new char[mpz.sizeinbase(10) + 2];
-	mpz.get_str(chars, 10);
-	string result = (string)chars;
-	delete chars;
-	return result;
-}
-
 public class BigInt : Object {
 
 	private Gmp.Mpz mpz = Gmp.Mpz();
@@ -18,14 +10,35 @@ public class BigInt : Object {
 		mpz.set_si(i);
 	}
 
-	public BigInt.from_mpz(Mpz mpz) {
-		this.mpz.set(mpz);
+	public BigInt.zero() {
 	}
 
 	public BigInt mul_si(long op) {
-		Mpz r = Mpz();
-		r.mul_si(mpz, op);
-		return new BigInt.from_mpz(r);
+		BigInt r = new BigInt.zero();
+		r.mpz.mul_si(mpz, op);
+		return r;
+	}
+
+	public BigInt add(BigInt op) {
+		BigInt r = new BigInt.zero();
+		r.mpz.add(mpz, op.mpz);
+		return r;
+	}
+
+	public BigInt sub(BigInt op) {
+		BigInt r = new BigInt.zero();
+		r.mpz.sub(mpz, op.mpz);
+		return r;
+	}
+
+	public BigInt pow(ulong exp) {
+		BigInt r = new BigInt.zero();
+		r.mpz.pow_ui(mpz, exp);
+		return r;
+	}
+
+	public int cmp(BigInt op) {
+		return mpz.cmp(op.mpz);
 	}
 
 	public string to_string() {
@@ -42,6 +55,22 @@ public class BigInt : Object {
 }
 
 int main(string[] args) {
+	BigInt max = new BigInt(10).pow(1000);
+	//BigInt max = new BigInt(100);
+	BigInt a = new BigInt(1);
+	BigInt b = new BigInt(2);
+	while (b.cmp(max) < 0) {
+		BigInt c = a.add(b);
+		a = b;
+		b = c;
+	}
+	stdout.printf("%s\n", b.to_string());
+	return 0;
+}
+
+/**
+100!
+int main(string[] args) {
 	BigInt r = new BigInt(1);
 	for(int i=1; i<100; i++) {
 		r = r.mul_si(i);
@@ -49,6 +78,7 @@ int main(string[] args) {
 	}
 	return 0;
 }
+**/
 
 /*
 int main(string[] args) {
