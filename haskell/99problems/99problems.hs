@@ -464,13 +464,29 @@ lfsort xs = sortBy ord xs
 
 type Symbol = String
 
-class BoolContext a where
-  isTrue :: a -> Symbol -> Bool
+data BoolExpr = BFalse
+              | BTrue
+              | BNot BoolExpr
+              | BOr [BoolExpr]
+              | BAnd [BoolExpr]
+              | BVar Symbol
 
-instance Eq a => BoolContext [a] where
-  isTrue ss s = elem s ss
+bEval :: BoolExpr -> (Symbol -> Bool) -> Bool
+bEval BFalse _ = False
+bEval BTrue _ = True
+bEval (BNot e) c = not $ bEval e c
+bEval (BOr es) c = or $ map (\e -> bEval e c) es
+bEval (BAnd es) c = and $ map (\e -> bEval e c) es
+bEval (BVar s) c = c s
 
-myNot s c = not $ isTrue s c
+cEmpty s = False
+
+subsets :: [a] -> [[a]]
+subsets [] = [[]]
+subsets (x:xs) = (subsets xs) ++ (map (x:) $ subsets xs)
+
+bTable :: [Symbol] -> BoolExpr -> [[Symbol]]
+bTable ss e = filter (\s -> bEval e (\x -> elem x s)) $ subsets ss
 
 -- P47 (*) Truth tables for logical expressions (2).  Continue problem
 --     P46 by defining and/2, or/2, etc as being operators. This allows
@@ -480,7 +496,9 @@ myNot s c = not $ isTrue s c
 --
 --     Example: * table(A,B, A and (A or not B)).  true true true true
 --     fail true fail true fail fail fail fail
---
+
+-- TODO geht das?
+
 -- P48 (**) Truth tables for logical expressions (3).  Generalize problem
 --     P47 in such a way that the logical expression may contain any
 --     number of logical variables. Define table/2 in a way that
@@ -491,7 +509,9 @@ myNot s c = not $ isTrue s c
 --     true true true true true true fail true true fail true true true
 --     fail fail true fail true true true fail true fail true fail fail
 --     true true fail fail fail true
---
+
+-- Gelößt in P48
+
 -- P49 (**) Gray code.  An n-bit Gray code is a sequence of n-bit strings
 --     constructed according to certain rules. For example, n = 1: C(1) =
 --     ['0','1'].  n = 2: C(2) = ['00','01','11','10'].  n = 3: C(3) =
@@ -504,7 +524,9 @@ myNot s c = not $ isTrue s c
 --
 --     Can you apply the method of "result caching" in order to make the
 --     predicate more efficient, when it is to be used repeatedly?
---
+
+
+
 -- P50 (***) Huffman code.  First of all, consult a good book on discrete
 --     mathematics or algorithms for a detailed description of Huffman
 --     codes!
