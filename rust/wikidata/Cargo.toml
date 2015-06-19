@@ -5,3 +5,4 @@ authors = ["Wolfgang Ginolas <you@example.com>"]
 
 [dependencies]
 rustc-serialize = "0.3.14"
+rusqlite = "0.1.0"
