@@ -40,7 +40,7 @@
 ;  (let [nextT (+ t delay)
 ;        n (first notes)
 ;        nRest (rest notes)]
-;    
+;
 ;    (when n
 ;     (at t (play-note n))
 ;     (apply-by nextT play-notes [nextT delay nRest]))))
@@ -56,7 +56,7 @@
 (defn every-second [s]
   (if (empty? s)
     '()
-    (lazy-seq (cons (first s) (every-secons (rest (rest s)))))))
+    (lazy-seq (cons (first s) (every-second (rest (rest s)))))))
 
 (play-notes (now) 100 (sort (take 4 (every-second (drop 0 (cycle (scale :c3 :major)))))))
 
@@ -110,12 +110,12 @@
 
 (concat)
 
-(play 200 
+(play 200
       (num->notes
        (parse-numbers "1-2-3")
        (scale :c4 :major)))
 
-(play 200 
+(play 200
       (num->notes
        (parse-numbers "135")
        (scale :c4 :major)))
@@ -169,4 +169,4 @@
   (player (now) 338 (take num-notes (cycle piece)))
   (player (now) 335 (take num-notes (cycle piece))))
 
-;;(stop)
+(stop)
