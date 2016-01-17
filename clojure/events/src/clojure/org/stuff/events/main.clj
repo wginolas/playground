@@ -4,8 +4,12 @@
               [neko.notify :refer [toast]]
               [neko.resource :as res]
               [neko.find-view :refer [find-view]]
-              [neko.threading :refer [on-ui]])
-    (:import android.widget.EditText))
+              [neko.threading :refer [on-ui]]
+              [neko.ui :refer [config]])
+    (:import android.widget.EditText
+             android.widget.TextView))
+
+;; https://github.com/alexander-yakushev/events/blob/master/tutorial.md
 
 ;; We execute this function to import all subclasses of R class. This gives us
 ;; access to all application resources.
@@ -22,12 +26,29 @@
              (res/get-string R$string/your_input_fmt input))
            :long)))
 
-(def main-layout [:linear-layout {:orientation :vertical}
-                  [:edit-text {:hint "Event name" :id ::name}]
-                  [:edit-text {:hint "Event location"} :id ::location]
-                  [:button {:text "+ Event"}]])
+(def listing (atom ""))
 
-(str  (.getText  (find-view (*a) ::name)))
+(defn main-layout [activity]
+  [:linear-layout {:orientation :vertical}
+   [:edit-text {:hint "Event name" :id ::name}]
+   [:edit-text {:hint "Event location" :id ::location}]
+   [:button {:text "+ Event"
+             :on-click (fn [_]
+                         (add-event activity))}]
+   [:text-view {:text @listing :id ::listing}]])
+
+(defn get-elmt [activity elmt]
+  (str (.getText ^TextView (find-view activity elmt))))
+
+(defn set-elmt [activity elmt s]
+  (on-ui (config (find-view activity elmt) :text s)))
+
+(defn add-event [activity]
+  (swap! listing str (get-elmt activity ::location) " - "
+         (get-elmt activity ::name) "\n")
+  (set-elmt activity ::listing @listing))
+
+;; (get-elmt (*a) ::name) 
 
 ;; This is how an Activity is defined. We create one and specify its onCreate
 ;; method. Inside we create a user interface that consists of an edit and a
@@ -39,4 +60,6 @@
     (.superOnCreate this bundle)
     (neko.debug/keep-screen-on this)
     (on-ui
-      (set-content-view! (*a) main-layout)))) 
+     (set-content-view! (*a) (main-layout (*a))))
+
+    ))
