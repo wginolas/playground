@@ -20,25 +20,30 @@
     (.compileShader gl shader)
     shader))
 
-(defn setup-shaders []
-  (let [vertexShaderSource (str "attribute vec3 aVertexPosition; \n"
-                                "void main() {\n"
-                                "    gl_Position = vec4(aVertexPosition, 1.0);\n"
-                                "}\n")
-        fragmentShaderSource (str "precision mediump float;\n"
-                                  "void main() {\n"
-                                  "    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
-                                  "}\n")
-        vertexShader (load-shader (.-VERTEX_SHADER gl) vertexShaderSource)
+(defn setup-shaders [vertexShaderSource fragmentShaderSource attrs]
+  (let [vertexShader (load-shader (.-VERTEX_SHADER gl) vertexShaderSource)
         fragmentShader (load-shader (.-FRAGMENT_SHADER gl) fragmentShaderSource)
         shaderProgram (.createProgram gl)]
     (.attachShader gl shaderProgram vertexShader)
     (.attachShader gl shaderProgram fragmentShader)
     (.linkProgram gl shaderProgram)
     (.useProgram gl shaderProgram)
-    (.getAttribLocation gl shaderProgram "aVertexPosition")))
+    (into {} (cons
+              [:shader shaderProgram]
+              (map #(vector (keyword %1) (.getAttribLocation gl shaderProgram %1)) attrs)))))
 
-(def a-vertex-position (setup-shaders))
+(def shader (setup-shaders
+             (str "attribute vec3 aVertexPosition; \n"
+                  "void main() {\n"
+                  "    gl_Position = vec4(aVertexPosition, 1.0);\n"
+                  "}\n")
+             (str "precision mediump float;\n"
+                  "void main() {\n"
+                  "    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+                  "}\n")
+             ["aVertexPosition"]))
+
+(println shader)
 
 (defn float-32-array [fs]
   (js/Float32Array. (apply array fs)))
@@ -57,8 +62,8 @@
 (defn draw []
   (.viewport gl 0 0 (.-drawingBufferWidth gl) (.-drawingBufferHeight gl))
   (.clear gl (.-COLOR_BUFFER_BIT gl))
-  (.vertexAttribPointer gl a-vertex-position (vertex-buffer :item-size) (.-FLOAT gl) false 0 0)
-  (.enableVertexAttribArray gl a-vertex-position)
+  (.vertexAttribPointer gl (shader :aVertexPosition) (vertex-buffer :item-size) (.-FLOAT gl) false 0 0)
+  (.enableVertexAttribArray gl (shader :aVertexPosition))
   (.drawArrays gl (.-TRIANGLES gl) 0 (vertex-buffer :item-count)))
 
 (defn ^:export startup []
