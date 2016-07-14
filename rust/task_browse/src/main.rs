@@ -53,6 +53,19 @@ fn load_tasks(filter: &[String]) -> Vec<Task> {
     return result;
 }
 
+fn descriptions<'a>(t: &'a Task) -> Vec<&'a String> {
+    let mut result: Vec<&'a String> = Vec::new();
+
+    result.push(&t.description);
+    if let Some(ref ans) = t.annotations {
+        for a in ans {
+            result.push(&a.description);
+        }
+    }
+
+    result
+}
+
 fn main() {
     let args = parse_args();
 
