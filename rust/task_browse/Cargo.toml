@@ -6,3 +6,6 @@ authors = ["wolfgang <wolfgang.ginolas@justsoftwareag.com>"]
 [dependencies]
 clap = "2.5.0"
 rustc-serialize = "0.3.19"
+regex = "0.1.73"
+lazy_static = "0.2.1"
+
