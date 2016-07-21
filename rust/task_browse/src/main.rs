@@ -80,13 +80,28 @@ fn find_just_tickets(s: &String) -> Vec<String> {
         .collect()
 }
 
+fn find_urls(s: &String) -> Vec<String> {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"https?://[^ ]+").unwrap();
+    }
+
+    RE.captures_iter(s)
+        .map(|c| c.at(0).unwrap().to_string())
+        .collect()
+}
+
 fn main() {
     let args = parse_args();
 
     let tasks = load_tasks(&args.filter);
-    for task in tasks {
-        println!("{:?}", descriptions(&task));
+    let links = tasks.iter()
+        .flat_map(|t| descriptions(&t))
+        .flat_map(|d| find_just_tickets(d).into_iter().chain(find_urls(d)));
+
+    for l in links {
+        println!("{}", l);
     }
+
 }
 
 #[test]
@@ -128,5 +143,15 @@ fn find_just_tickets_finds_tickets() {
             "https://jira.just.social/JUST-1".to_string(),
             "https://jira.just.social/JUST-1234".to_string()],
         find_just_tickets(&"Hallo JUST-1 Welt! JUST-1234".to_string())
+    );
+}
+
+#[test]
+fn find_urls_finds_urls() {
+    assert_eq!(
+        vec![
+            "http://heise.de".to_string(),
+            "https://golem.de/eine/seite".to_string()],
+        find_urls(&"Hallo http://heise.de Welt! https://golem.de/eine/seite".to_string())
     );
 }
