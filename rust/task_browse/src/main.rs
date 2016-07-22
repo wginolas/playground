@@ -90,6 +90,13 @@ fn find_urls(s: &String) -> Vec<String> {
         .collect()
 }
 
+fn open_url(s: &String) {
+    Command::new("xdg-open")
+        .arg(s)
+        .spawn()
+        .expect("Could not open URL");
+}
+
 fn main() {
     let args = parse_args();
 
@@ -100,6 +107,7 @@ fn main() {
 
     for l in links {
         println!("{}", l);
+        open_url(&l);
     }
 
 }
