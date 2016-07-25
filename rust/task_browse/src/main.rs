@@ -76,7 +76,7 @@ fn find_just_tickets(s: &String) -> Vec<String> {
     }
 
     RE.captures_iter(s)
-        .map(|c| format!("https://jira.just.social/{}", c.at(0).unwrap()))
+        .map(|c| format!("https://jira.just-ag.com/browse/{}", c.at(0).unwrap()))
         .collect()
 }
 
@@ -148,8 +148,8 @@ fn find_just_tickets_finds_no_ticket() {
 fn find_just_tickets_finds_tickets() {
     assert_eq!(
         vec![
-            "https://jira.just.social/JUST-1".to_string(),
-            "https://jira.just.social/JUST-1234".to_string()],
+            "https://jira.just-ag.com/browse/JUST-1".to_string(),
+            "https://jira.just-ag.com/browse/JUST-1234".to_string()],
         find_just_tickets(&"Hallo JUST-1 Welt! JUST-1234".to_string())
     );
 }
