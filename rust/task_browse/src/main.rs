@@ -15,7 +15,7 @@ struct Args {
 
 fn parse_args() -> Args {
     let matches = App::new("task_browse")
-        .version("0.0.1")
+        .version("0.1.1")
         .author("Wolfgang Ginolas <wolfgang.ginolas@gwif.eu>")
         .about("Open links in a task in a browser")
         .setting(AppSettings::ColoredHelp)
@@ -35,9 +35,10 @@ fn parse_args() -> Args {
 
 #[derive(RustcDecodable, Debug)]
 struct Task {
+    uuid: String,
     id: i32,
     description: String,
-    uuid: String,
+    project: Option<String>,
     annotations: Option<Vec<Annotation>>
 }
 
@@ -61,6 +62,9 @@ fn descriptions<'a>(t: &'a Task) -> Vec<&'a String> {
     let mut result: Vec<&'a String> = Vec::new();
 
     result.push(&t.description);
+    if let Some(ref project) = t.project {
+        result.push(&project);
+    }
     if let Some(ref ans) = t.annotations {
         for a in ans {
             result.push(&a.description);
@@ -120,6 +124,7 @@ fn descriptions_extracts_description() {
             id: 1,
             description: "desc".to_string(),
             uuid: "asdf".to_string(),
+            project: None,
             annotations: None}));
 }
 
@@ -131,9 +136,22 @@ fn descriptions_extracts_annotations() {
             id: 1,
             description: "d".to_string(),
             uuid: "asdf".to_string(),
+            project: None,
             annotations: Some(vec![
                 Annotation {description: "a1".to_string()},
                 Annotation {description: "a2".to_string()}])}));
+}
+
+#[test]
+fn descriptions_extracts_project() {
+    assert_eq!(
+        vec![&"d".to_string(), &"p".to_string()],
+        descriptions(&Task {
+            id: 1,
+            description: "d".to_string(),
+            uuid: "asdf".to_string(),
+            project: Some("p".to_string()),
+            annotations: None}));
 }
 
 #[test]
