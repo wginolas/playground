@@ -4,6 +4,8 @@ extern crate regex;
 #[macro_use]
 extern crate lazy_static;
 
+use std::collections::HashSet;
+use std::iter::FromIterator;
 use std::process::Command;
 use rustc_serialize::json;
 use clap::{Arg, App, AppSettings};
@@ -15,7 +17,7 @@ struct Args {
 
 fn parse_args() -> Args {
     let matches = App::new("task_browse")
-        .version("0.1.1")
+        .version("0.2.0")
         .author("Wolfgang Ginolas <wolfgang.ginolas@gwif.eu>")
         .about("Open links in a task in a browser")
         .setting(AppSettings::ColoredHelp)
@@ -84,6 +86,16 @@ fn find_just_tickets(s: &String) -> Vec<String> {
         .collect()
 }
 
+fn find_zen_tickets(s: &String) -> Vec<String> {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"ZEN-(\d+)").unwrap();
+    }
+
+    RE.captures_iter(s)
+        .map(|c| format!("https://justsupport.zendesk.com/agent/tickets/{}", c.at(1).unwrap()))
+        .collect()
+}
+
 fn find_urls(s: &String) -> Vec<String> {
     lazy_static! {
         static ref RE: Regex = Regex::new(r"https?://[^ ]+").unwrap();
@@ -107,9 +119,13 @@ fn main() {
     let tasks = load_tasks(&args.filter);
     let links = tasks.iter()
         .flat_map(|t| descriptions(&t))
-        .flat_map(|d| find_just_tickets(d).into_iter().chain(find_urls(d)));
+        .flat_map(|d| find_just_tickets(d).into_iter()
+                    .chain(find_urls(d))
+                    .chain(find_zen_tickets(d)));
 
-    for l in links {
+    let link_set: HashSet<String> = HashSet::from_iter(links);
+
+    for l in link_set {
         println!("{}", l);
         open_url(&l);
     }
@@ -169,6 +185,24 @@ fn find_just_tickets_finds_tickets() {
             "https://jira.just-ag.com/browse/JUST-1".to_string(),
             "https://jira.just-ag.com/browse/JUST-1234".to_string()],
         find_just_tickets(&"Hallo JUST-1 Welt! JUST-1234".to_string())
+    );
+}
+
+#[test]
+fn find_zen_tickets_finds_no_ticket() {
+    assert_eq!(
+        Vec::<String>::new(),
+        find_zen_tickets(&"Hallo Welt!".to_string())
+    );
+}
+
+#[test]
+fn find_zen_tickets_finds_tickets() {
+    assert_eq!(
+        vec![
+            "https://justsupport.zendesk.com/agent/tickets/1".to_string(),
+            "https://justsupport.zendesk.com/agent/tickets/1234".to_string()],
+        find_zen_tickets(&"Hallo ZEN-1 Welt! ZEN-1234".to_string())
     );
 }
 
