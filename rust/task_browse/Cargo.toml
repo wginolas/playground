@@ -1,6 +1,6 @@
 [package]
 name = "task_browse"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["wolfgang <wolfgang.ginolas@justsoftwareag.com>"]
 
 [dependencies]

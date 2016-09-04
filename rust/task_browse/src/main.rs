@@ -17,14 +17,15 @@ struct Args {
 
 fn parse_args() -> Args {
     let matches = App::new("task_browse")
-        .version("0.2.0")
+        .version("0.3.0")
         .author("Wolfgang Ginolas <wolfgang.ginolas@gwif.eu>")
         .about("Open links in a task in a browser")
         .setting(AppSettings::ColoredHelp)
         .arg(Arg::with_name("FILTER")
-             .help("Filter query which specifies the tasks to open")
-             .takes_value(true)
-            .multiple(true))
+            .help("Filter query which specifies the tasks to open")
+            .takes_value(true)
+            .multiple(true)
+            .required(true))
         .get_matches();
 
     Args {
