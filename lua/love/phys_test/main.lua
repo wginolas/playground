@@ -3,6 +3,8 @@ ASTER_COUNT = 50
 ASTER_SPEED = 100
 ASTER_SIZE = 50
 
+toSplit = {}
+
 t = 0
 
 function dist(x1, y1, x2, y2)
@@ -36,13 +38,81 @@ function randomPolygonShape(rOuter, rand)
   return shape
 end
 
+function splitShape(s)
+  local p = {s:getPoints()}
+  local len = #p / 2
+  local cx, cy = 0, 0
+
+  local i
+  -- find center
+  for i = 1, len do
+    cx = cx + p[i*2-1]
+    cy = cy + p[i*2]
+  end
+  cx = cx / len
+  cy = cy / len
+
+
+end
+
+function splitShapeOld(s)
+  local p = {s:getPoints()}
+  local newX = (p[1] + p[#p-1]) / 2
+  local newY = (p[2] + p[#p]) / 2
+  table.insert(p, 1, newY)
+  table.insert(p, 1, newX)
+  local len = #p / 2
+  local halfLen = math.floor(len / 2) + 1
+  local p1 = {}
+  local p2 = {}
+  local i
+  for i = 1, len do
+    local x = p[i*2-1]
+    local y = p[i*2]
+    if i <= halfLen then
+      print(i, 1)
+      table.insert(p1, x)
+      table.insert(p1, y)
+    end
+    if i >= halfLen then
+      print(i, 2)
+      table.insert(p2, x)
+      table.insert(p2, y)
+    end
+  end
+  table.insert(p2, p[1])
+  table.insert(p2, p[2])
+  return love.physics.newPolygonShape(p1), love.physics.newPolygonShape(p2)
+end
+
+function splitAster(world, body)
+  local fixture = (body:getFixtureList())[1]
+  local shape = fixture:getShape()
+
+  local bodies = {love.physics.newBody(world, body:getX(), body:getY(), "dynamic"),
+                  love.physics.newBody(world, body:getX(), body:getY(), "dynamic")}
+  local shapes = {splitShape(shape)}
+  local i, b
+  for i, b in ipairs(bodies) do
+    b:setLinearVelocity(body:getLinearVelocity())
+    b:setAngularVelocity(body:getAngularVelocity())
+    b:setAngle(body:getAngle())
+    local fixture = love.physics.newFixture(b, shapes[i])
+    fixture:setFriction(0.9)
+    fixture:setRestitution(0.5)
+    b:setUserData({type='aster'})
+  end
+  body:destroy()
+  return bodies[1], bodies[2]
+end
+
 function createAster(world, x, y, vx, vy, r)
   local body = love.physics.newBody(world, x, y, "dynamic")
   local shape = randomPolygonShape(r, r/100)
   local fixture = love.physics.newFixture(body, shape)
   fixture:setFriction(0.9)
   fixture:setRestitution(0.5)
-  body:setLinearVelocity(vx, vy)
+  --body:setLinearVelocity(vx, vy)
   body:setUserData({type='aster'})
   return body
 end
@@ -66,8 +136,8 @@ end
 
 function fireBullet()
   local x, y = rocket:getPosition()
-  x = x + math.cos(rocket:getAngle()) * 23
-  y = y + math.sin(rocket:getAngle()) * 23
+  x = x + math.cos(rocket:getAngle()) * 25
+  y = y + math.sin(rocket:getAngle()) * 25
   local dx, dy = rocket:getLinearVelocity()
   dx = dx + math.cos(rocket:getAngle()) * 500
   dy = dy + math.sin(rocket:getAngle()) * 500
@@ -82,7 +152,7 @@ function createStars()
     table.insert(stars, {
                    x = love.math.random(-MAX_PX, MAX_PX),
                    y = love.math.random(-MAX_PX, MAX_PX),
-                   s = love.math.random()
+                   s = love.math.random() / 2 + 0.5
     })
   end
   return stars
@@ -128,17 +198,21 @@ function createRocket(world, x, y)
 end
 
 function collidePostSolve(fixture1, fixture2, contact)
-  print(fixture1, fixture2, contact)
+  --print(fixture1, fixture2, contact)
   local i, f
-  for i, f in ipairs({fixture1, fixture2}) do
+  local fixtures = {fixture1, fixture2}
+  for i, f in ipairs(fixtures) do
+    local other = fixtures[3-i]
     if f:getBody():getUserData().type == 'bullet' then
       print('peng')
       f:getBody():destroy()
+      table.insert(toSplit, other:getBody())
     end
   end
 end
 
 function love.load()
+  print(_VERSION)
   local w, h = love.graphics.getDimensions()
   MAX_PX = math.sqrt(w*w + h*h) / 2
   world = love.physics.newWorld(0, 0, 800, 600, 0, 0)
@@ -189,14 +263,15 @@ function updateAsteroids()
 
   local i,b
   for i, b in ipairs(world:getBodyList()) do
-    if b:getUserData().type == 'aster' then
+    local type = b:getUserData().type
+    if type == 'aster' then
       if dist(rocket:getX(), rocket:getY(), b:getX(), b:getY()) > rOuter then
         b:destroy()
       else
         count = count + 1
       end
     end
-    if b:getUserData().type == 'bullet' then
+    if type == 'bullet' then
       if dist(rocket:getX(), rocket:getY(), b:getX(), b:getY()) > rOuter then
         b:destroy()
       end
@@ -211,6 +286,14 @@ function updateAsteroids()
     y = y + rocket:getY()
     createAster(world, x, y, vx, vy, r)
   end
+end
+
+function splitAsteroids()
+  local i, b
+  for i, a in ipairs(toSplit) do
+    splitAster(world, a)
+  end
+  toSplit = {}
 end
 
 function love.update(dt)
@@ -235,6 +318,7 @@ function love.update(dt)
   local rx2, ry2 = rocket:getPosition()
   updateStars(stars, rx1 - rx2, ry1 - ry2)
 
+  splitAsteroids()
   updateAsteroids()
 
   t = t + dt
