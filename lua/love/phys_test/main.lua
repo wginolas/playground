@@ -12,10 +12,14 @@ function dist(x1, y1, x2, y2)
   return math.sqrt(dx*dx + dy*dy)
 end
 
+function rnd(min, max)
+  return love.math.random() * (max - min) + min
+end
+
 function randomPointInCircle(rOuter, rInner)
   local x, y, d
   repeat
-    x, y = love.math.random(-rOuter, rOuter), love.math.random(-rOuter, rOuter)
+    x, y = rnd(-rOuter, rOuter), rnd(-rOuter, rOuter)
     d = dist(0, 0, x, y)
   until d<=rOuter and d>=rInner
   return x, y
@@ -24,17 +28,18 @@ end
 function randomPolygonShape(rOuter, rand)
   local i, ps, shape
 
-  repeat
-    ps = {}
-    for i = 1, 8 do
-      local x = math.cos(i/4 * math.pi) * rOuter
-      local y = math.sin(i/4 * math.pi) * rOuter
-      table.insert(ps, x)
-      table.insert(ps, y)
+  ps = {}
+  for i = 1, 8 do
+    local x, y = randomPointInCircle(rOuter, 0)
+    table.insert(ps, x)
+    table.insert(ps, y)
+    if i >= 3 then
+      local s = love.physics.newPolygonShape(ps)
+      if s:validate() then
+        shape = s
+      end
     end
-    shape = love.physics.newPolygonShape(ps)
-    return shape
-  until shape:validate()
+  end
   return shape
 end
 
@@ -74,15 +79,18 @@ function splitAster(world, body)
   local shapes = splitShape(shape)
   local i, s
   for i, s in ipairs(shapes) do
-    local b = love.physics.newBody(world, body:getX(), body:getY(), "dynamic")
-    b:setLinearVelocity(body:getLinearVelocity())
-    b:setAngularVelocity(body:getAngularVelocity())
-    b:setAngle(body:getAngle())
-    local fixture = love.physics.newFixture(b, s)
-    fixture:setFriction(0.9)
-    fixture:setRestitution(0.5)
-    b:setUserData({type='aster'})
-    table.insert(bodies, b)
+    local centerX, centerY, mass, inertia = s:computeMass(1)
+    if mass>0.05 then
+      local b = love.physics.newBody(world, body:getX(), body:getY(), "dynamic")
+      b:setLinearVelocity(body:getLinearVelocity())
+      b:setAngularVelocity(body:getAngularVelocity())
+      b:setAngle(body:getAngle())
+      local fixture = love.physics.newFixture(b, s)
+      fixture:setFriction(0.9)
+      fixture:setRestitution(0.5)
+      b:setUserData({type='aster'})
+      table.insert(bodies, b)
+    end
   end
   body:destroy()
   return bodies
