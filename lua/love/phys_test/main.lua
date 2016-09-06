@@ -39,6 +39,7 @@ function randomPolygonShape(rOuter, rand)
 end
 
 function splitShape(s)
+  local result = {}
   local p = {s:getPoints()}
   local len = #p / 2
   local cx, cy = 0, 0
@@ -52,67 +53,49 @@ function splitShape(s)
   cx = cx / len
   cy = cy / len
 
-
-end
-
-function splitShapeOld(s)
-  local p = {s:getPoints()}
-  local newX = (p[1] + p[#p-1]) / 2
-  local newY = (p[2] + p[#p]) / 2
-  table.insert(p, 1, newY)
-  table.insert(p, 1, newX)
-  local len = #p / 2
-  local halfLen = math.floor(len / 2) + 1
-  local p1 = {}
-  local p2 = {}
-  local i
+  -- split into triangles
+  local x1 = p[len*2-1]
+  local y1 = p[len*2]
   for i = 1, len do
-    local x = p[i*2-1]
-    local y = p[i*2]
-    if i <= halfLen then
-      print(i, 1)
-      table.insert(p1, x)
-      table.insert(p1, y)
-    end
-    if i >= halfLen then
-      print(i, 2)
-      table.insert(p2, x)
-      table.insert(p2, y)
-    end
+    local x2 = p[i*2-1]
+    local y2 = p[i*2]
+    table.insert(result, love.physics.newPolygonShape(cx, cy, x1, y1, x2, y2))
+    x1, y1 = x2, y2
   end
-  table.insert(p2, p[1])
-  table.insert(p2, p[2])
-  return love.physics.newPolygonShape(p1), love.physics.newPolygonShape(p2)
+
+  return result
 end
 
 function splitAster(world, body)
   local fixture = (body:getFixtureList())[1]
   local shape = fixture:getShape()
 
-  local bodies = {love.physics.newBody(world, body:getX(), body:getY(), "dynamic"),
-                  love.physics.newBody(world, body:getX(), body:getY(), "dynamic")}
-  local shapes = {splitShape(shape)}
-  local i, b
-  for i, b in ipairs(bodies) do
+  local bodies = {}
+  local shapes = splitShape(shape)
+  local i, s
+  for i, s in ipairs(shapes) do
+    local b = love.physics.newBody(world, body:getX(), body:getY(), "dynamic")
     b:setLinearVelocity(body:getLinearVelocity())
     b:setAngularVelocity(body:getAngularVelocity())
     b:setAngle(body:getAngle())
-    local fixture = love.physics.newFixture(b, shapes[i])
+    local fixture = love.physics.newFixture(b, s)
     fixture:setFriction(0.9)
     fixture:setRestitution(0.5)
     b:setUserData({type='aster'})
+    table.insert(bodies, b)
   end
   body:destroy()
-  return bodies[1], bodies[2]
+  return bodies
 end
 
-function createAster(world, x, y, vx, vy, r)
+function createAster(world, x, y, vx, vy, va, r)
   local body = love.physics.newBody(world, x, y, "dynamic")
   local shape = randomPolygonShape(r, r/100)
   local fixture = love.physics.newFixture(body, shape)
   fixture:setFriction(0.9)
   fixture:setRestitution(0.5)
-  --body:setLinearVelocity(vx, vy)
+  body:setLinearVelocity(vx, vy)
+  body:setAngularVelocity(va)
   body:setUserData({type='aster'})
   return body
 end
@@ -281,10 +264,11 @@ function updateAsteroids()
   if count < ASTER_COUNT then
     local x, y = randomPointInCircle(rOuter, rInner)
     local vx, vy = randomPointInCircle(ASTER_SPEED, 0)
+    local va = love.math.random() * 4 - 2
     local r = love.math.random(ASTER_SIZE)
     x = x + rocket:getX()
     y = y + rocket:getY()
-    createAster(world, x, y, vx, vy, r)
+    createAster(world, x, y, vx, vy, va, r)
   end
 end
 
