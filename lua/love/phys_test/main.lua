@@ -242,7 +242,7 @@ end
 
 function love.keypressed(key, scancode, isrepeat)
   if not isrepeat then
-    if key == 'space' then
+    if key == 'space' or key == 'lctrl' then
       fireBullet()
     end
   end
