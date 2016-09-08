@@ -1,6 +1,8 @@
 local mymath = require('mymath')
 local asteroid = require('asteroid')
 local stars = require('stars')
+local bullet = require('bullet')
+local rocket = require('rocket')
 
 debug = true
 ASTER_COUNT = 50
@@ -10,32 +12,6 @@ ASTER_SIZE = 50
 toSplit = {}
 
 t = 0
-
-function createBullet(world, x, y, dx, dy)
-  local body = love.physics.newBody(world, x, y, 'dynamic')
-  love.physics.newFixture(body, love.physics.newCircleShape(3))
-  body:setLinearVelocity(dx, dy)
-  body:setUserData({type='bullet'})
-  return body
-end
-
-function fireBullet()
-  local x, y = rocket:getPosition()
-  x = x + math.cos(rocket:getAngle()) * 25
-  y = y + math.sin(rocket:getAngle()) * 25
-  local dx, dy = rocket:getLinearVelocity()
-  dx = dx + math.cos(rocket:getAngle()) * 500
-  dy = dy + math.sin(rocket:getAngle()) * 500
-  createBullet(world, x, y, dx, dy)
-end
-
-function createRocket(world, x, y)
-  local body = love.physics.newBody(world, x, y, "dynamic")
-  love.physics.newFixture(body, love.physics.newPolygonShape(20, 0, 0, -10, 0, 10))
-  body:setUserData({type='rocket'})
-  body:setFixedRotation(true)
-  return body
-end
 
 function collidePostSolve(fixture1, fixture2, contact)
   --print(fixture1, fixture2, contact)
@@ -57,7 +33,7 @@ function love.load()
   MAX_PX = math.sqrt(w*w + h*h) / 2
   world = love.physics.newWorld(0, 0, 800, 600, 0, 0)
   world:setCallbacks(null, null, null, collidePostSolve)
-  rocket = createRocket(world, 400, 300)
+  rocket = rocket.createBody(world, 0, 0)
   stars = stars.Stars.new(MAX_PX)
 end
 
@@ -92,7 +68,7 @@ end
 function love.keypressed(key, scancode, isrepeat)
   if not isrepeat then
     if key == 'space' or key == 'lctrl' then
-      fireBullet()
+      rocket:getUserData():fire()
     end
   end
 end
