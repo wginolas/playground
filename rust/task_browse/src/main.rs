@@ -17,7 +17,7 @@ struct Args {
 
 fn parse_args() -> Args {
     let matches = App::new("task_browse")
-        .version("0.3.0")
+        .version("0.4.0")
         .author("Wolfgang Ginolas <wolfgang.ginolas@gwif.eu>")
         .about("Open links in a task in a browser")
         .setting(AppSettings::ColoredHelp)
@@ -79,7 +79,7 @@ fn descriptions<'a>(t: &'a Task) -> Vec<&'a String> {
 
 fn find_just_tickets(s: &String) -> Vec<String> {
     lazy_static! {
-        static ref RE: Regex = Regex::new(r"JUST-\d+").unwrap();
+        static ref RE: Regex = Regex::new(r"(JUST|AOK)-\d+").unwrap();
     }
 
     RE.captures_iter(s)
@@ -184,8 +184,8 @@ fn find_just_tickets_finds_tickets() {
     assert_eq!(
         vec![
             "https://jira.just-ag.com/browse/JUST-1".to_string(),
-            "https://jira.just-ag.com/browse/JUST-1234".to_string()],
-        find_just_tickets(&"Hallo JUST-1 Welt! JUST-1234".to_string())
+            "https://jira.just-ag.com/browse/AOK-1234".to_string()],
+        find_just_tickets(&"Hallo JUST-1 Welt! AOK-1234".to_string())
     );
 }
 
