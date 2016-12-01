@@ -1,0 +1,7 @@
+[package]
+name = "sys_info"
+version = "0.1.0"
+authors = ["Wolfgang Ginolas <wolfgang.ginolas@gwif.eu>"]
+
+[dependencies]
+num_cpus = "1.2.0"

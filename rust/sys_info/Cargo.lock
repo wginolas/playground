@@ -1,0 +1,23 @@
+[root]
+name = "sys_info"
+version = "0.1.0"
+dependencies = [
+ "num_cpus 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "libc"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "num_cpus"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[metadata]
+"checksum libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)" = "044d1360593a78f5c8e5e710beccdc24ab71d1f01bc19a29bcacdba22e8475d8"
+"checksum num_cpus 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "55aabf4e2d6271a2e4e4c0f2ea1f5b07cc589cc1a9e9213013b54a76678ca4f3"
