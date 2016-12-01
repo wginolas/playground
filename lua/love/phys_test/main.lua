@@ -1,21 +1,19 @@
 local mymath = require('mymath')
 local asteroid = require('asteroid')
 local stars = require('stars')
-local bullet = require('bullet')
 local rocket = require('rocket')
 
 debug = true
-ASTER_COUNT = 50
-ASTER_SPEED = 100
-ASTER_SIZE = 50
+local ASTER_COUNT = 50
+local ASTER_SPEED = 100
+local ASTER_SIZE = 50
 
-toSplit = {}
+local toSplit = {}
 
-t = 0
+local t = 0
 
-function collidePostSolve(fixture1, fixture2, contact)
+local function collidePostSolve(fixture1, fixture2, contact)
   --print(fixture1, fixture2, contact)
-  local i, f
   local fixtures = {fixture1, fixture2}
   for i, f in ipairs(fixtures) do
     local other = fixtures[3-i]
@@ -38,8 +36,6 @@ function love.load()
 end
 
 function love.draw()
-  local i, b, j, f
-
   local w, h = love.graphics.getDimensions()
   love.graphics.push()
   love.graphics.translate(w/2, h/2)
@@ -48,18 +44,7 @@ function love.draw()
   love.graphics.translate(-rocket:getX(), -rocket:getY())
 
   for i, b in ipairs(world:getBodyList()) do
-    for j, f in ipairs(b:getFixtureList()) do
-      local s = f:getShape()
-      if s:getType() == 'circle' then
-        love.graphics.circle("fill", b:getX(), b:getY(), f:getShape():getRadius())
-      end
-      if s:getType() == 'polygon' then
-        love.graphics.setColor(0,0,0,255)
-        love.graphics.polygon('fill', b:getWorldPoints(s:getPoints()))
-        love.graphics.setColor(255,255,255,255)
-        love.graphics.polygon('line', b:getWorldPoints(s:getPoints()))
-      end
-    end
+    b:getUserData():draw()
   end
 
   love.graphics.pop()
@@ -73,7 +58,7 @@ function love.keypressed(key, scancode, isrepeat)
   end
 end
 
-function updateAsteroids()
+local function updateAsteroids()
   local count = 0
   local rOuter, rInner = MAX_PX*2, MAX_PX
 

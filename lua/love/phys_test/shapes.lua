@@ -1,7 +1,7 @@
 local mymath = require('mymath')
 
 local function randomPolygonShape(rOuter)
-  local i, ps, shape
+  local ps, shape
 
   ps = {}
   for i = 1, 8 do
@@ -24,7 +24,6 @@ local function splitShape(s)
   local len = #p / 2
   local cx, cy = 0, 0
 
-  local i
   -- find center
   for i = 1, len do
     cx = cx + p[i*2-1]

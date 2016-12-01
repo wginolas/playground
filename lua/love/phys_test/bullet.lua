@@ -27,6 +27,13 @@ function Bullet.new(body)
   return self
 end
 
+function Bullet:draw()
+  local body = self.body
+  local fixture = (body:getFixtureList())[1]
+  local shape = fixture:getShape()
+  love.graphics.circle("fill", body:getX(), body:getY(), fixture:getShape():getRadius())
+end
+
 return {
   fire = fire
 }

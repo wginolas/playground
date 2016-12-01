@@ -30,9 +30,7 @@ function Asteroid:split()
   local shape = fixture:getShape()
 
   local bodies = {}
-  local shapes = shapes.splitShape(shape)
-  local i, s
-  for i, s in ipairs(shapes) do
+  for i, s in ipairs(shapes.splitShape(shape)) do
     local centerX, centerY, mass, inertia = s:computeMass(1)
     if mass>0.05 then
       local vx, vy = body:getLinearVelocity()
@@ -42,6 +40,17 @@ function Asteroid:split()
   end
   body:destroy()
   return bodies
+end
+
+function Asteroid:draw()
+  local body = self.body
+  local fixture = (body:getFixtureList())[1]
+  local shape = fixture:getShape()
+
+  love.graphics.setColor(0,0,0,255)
+  love.graphics.polygon('fill', body:getWorldPoints(shape:getPoints()))
+  love.graphics.setColor(255,255,255,255)
+  love.graphics.polygon('line', body:getWorldPoints(shape:getPoints()))
 end
 
 local function createShape(r)

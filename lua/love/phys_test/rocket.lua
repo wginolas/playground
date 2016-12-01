@@ -26,6 +26,17 @@ function Rocket:fire()
   bullet.fire(world, body)
 end
 
+function Rocket:draw()
+  local body = self.body
+  local fixture = (body:getFixtureList())[1]
+  local shape = fixture:getShape()
+
+  love.graphics.setColor(0,0,0,255)
+  love.graphics.polygon('fill', body:getWorldPoints(shape:getPoints()))
+  love.graphics.setColor(255,255,255,255)
+  love.graphics.polygon('line', body:getWorldPoints(shape:getPoints()))
+end
+
 return {
   createBody = createBody
 }
