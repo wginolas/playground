@@ -35,7 +35,7 @@ fn send_info(port: &mut serial::SystemPort, idle_str: &str, mem_used_str: &str) 
              cpu_used,
              mem_used);
 
-    port.write_all(&[33, cpu_used, mem_used])?;
+    port.write_all(&[33, mem_used, cpu_used])?;
     port.flush()?;
 
     Ok(())
