@@ -89,18 +89,34 @@ fn main2() {
     }
 }
 
-fn main() {
-    let child = Command::new("sar")
-        .arg("-r")
+fn open_sar_stream() -> io::Result<Box<BufRead>> {
+    let child = Command::new("sar").arg("-r")
         .arg("-u")
         .arg("1")
         .stdout(Stdio::piped())
-        .spawn()
-        .unwrap();
+        .spawn()?;
 
-    let input = BufReader::new(child.stdout.unwrap());
+    Ok(Box::new(BufReader::new(child.stdout.unwrap())))
+}
 
+fn main() {
+    let input = open_sar_stream().unwrap();
+
+    let mut last_line = String::new();
     for line in input.lines().map(|l| l.unwrap()) {
-        println!("{}", line);
+
+        if !line.is_empty() && !last_line.is_empty() {
+
+            for (k, v) in last_line.split_whitespace().zip(line.split_whitespace()) {
+                if k == "%idle" {
+                    println!("idle: {}", v);
+                }
+                if k == "%commit" {
+                    println!("mem used: {}", v);
+                }
+            }
+        }
+
+        last_line = line;
     }
 }
