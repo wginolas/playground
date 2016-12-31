@@ -5,3 +5,4 @@ authors = ["Wolfgang Ginolas <wolfgang.ginolas@gwif.eu>"]
 
 [dependencies]
 serial = "0.3"
+num_cpus = "1.2.0"
