@@ -6,11 +6,32 @@
 
 [node name="main" type="Node2D"]
 
-[node name="background" type="Sprite" parent="."]
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
 
-transform/pos = Vector2( 451.976, 347.824 )
-transform/scale = Vector2( 0.5, 0.5 )
+layer = -1
+offset = Vector2( 0, 0 )
+rotation = 0.0
+scale = Vector2( 1, 1 )
+scroll/offset = Vector2( 0, 0 )
+scroll/base_offset = Vector2( 0, 0 )
+scroll/base_scale = Vector2( 1, 1 )
+scroll/limit_begin = Vector2( 0, 0 )
+scroll/limit_end = Vector2( 0, 0 )
+scroll/ignore_camera_zoom = false
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+
+motion/scale = Vector2( 0.5, 0.5 )
+motion/offset = Vector2( 0, 0 )
+motion/mirroring = Vector2( 0, 0 )
+
+[node name="background" type="Sprite" parent="ParallaxBackground/ParallaxLayer"]
+
+transform/pos = Vector2( 479.93, 249.985 )
+transform/scale = Vector2( 0.6, 0.6 )
 texture = ExtResource( 1 )
+region = true
+region_rect = Rect2( 0, 0, 10000, 1536 )
 
 [node name="player" parent="." instance=ExtResource( 2 )]
 
