@@ -7,7 +7,7 @@ API_URL= "https://api.openweathermap.org/data/2.5/weather"
 
 WeatherData = namedtuple("WeatherData", ("temp"))
 
-def load(city_id):
+def load_current(city_id):
     jdata = json.loads(
         MicroWebCli.GETRequest(
             API_URL,

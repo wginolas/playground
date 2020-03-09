@@ -1,3 +1,9 @@
+# TODO
+# - Load wheather data
+#   - [X] Current
+#   - [ ] Forecast
+
+
 from machine import Pin, Timer
 import math
 
@@ -14,7 +20,7 @@ def move():
         servo.move(math.sin(chrono.read()) / 2.0 + 0.5)
 
 def httpTest():
-    data = openWeather.load("2818067")
+    data = openWeather.load_current("2818067")
     print(data)
 
 #httpTest()
